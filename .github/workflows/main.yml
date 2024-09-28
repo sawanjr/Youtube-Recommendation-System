@@ -1,5 +1,4 @@
-
-name: FastAPI YouTube Recommendation System CI
+name: Train and Deploy FastAPI App
 
 on:
   push:
@@ -33,6 +32,19 @@ jobs:
         source .venv/bin/activate
         python src/models/train.py
 
+    # Save output graphs as artifacts
+    - name: Save Matplotlib output
+      if: success() # Only if training is successful
+      run: |
+        mkdir -p output_graphs
+        cp -r path_to_graphs/* output_graphs/ # Replace with your actual graph directory
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: training-output
+        path: output_graphs/
+
   deploy_ui:
     needs: train_model
     runs-on: ubuntu-latest
@@ -56,3 +68,8 @@ jobs:
       run: |
         source .venv/bin/activate
         nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+
+    # Expose FastAPI app
+    - name: Expose FastAPI UI
+      run: |
+        echo "FastAPI is running at http://localhost:8000"
