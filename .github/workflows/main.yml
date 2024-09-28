@@ -37,7 +37,7 @@ jobs:
       if: success() # Only if training is successful
       run: |
         mkdir -p output_graphs
-        cp -r path_to_graphs/* output_graphs/ # Replace with your actual graph directory
+        cp -r artifacts/graphs/* output_graphs/ # Assuming the graphs are saved here
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3
