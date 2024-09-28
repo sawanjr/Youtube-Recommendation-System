@@ -1,1 +1,6 @@
-
+fastapi
+uvicorn
+pydantic
+jinja2
+pyyaml
+torch
