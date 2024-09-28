@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Recommendation System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #908c8c; /* Similar to YouTube's background */
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            display: flex;
+            max-width: 1400px; /* Increased width for larger box */
+            background: #ffffff;
+            padding: 40px; /* Increased padding */
+            border-radius: 12px; /* Larger border radius for softer edges */
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            width: 100%;
+        }
+        .main-frame {
+            width: 70%;
+            padding: 30px; /* Increased padding */
+            font-size: 1.2rem; /* Increased font size */
+        }
+        .sidebar {
+            width: 30%;
+            background-color: #f4f4f4;
+            padding: 30px; /* Increased padding */
+            border-radius: 12px;
+            margin-left: 20px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            font-size: 1.1rem; /* Larger font in the sidebar */
+        }
+        h1 {
+            text-align: center;
+            color: #FF0000; /* YouTube red */
+            font-size: 2.5rem; /* Larger title font size */
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 15px; /* Larger input padding */
+            margin: 15px 0;
+            border: 1px solid #cccccc;
+            border-radius: 6px;
+            font-size: 1.2rem; /* Larger font size for input fields */
+        }
+        button {
+            width: 100%;
+            padding: 15px; /* Larger button size */
+            background-color: #FF0000; /* YouTube red */
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.2rem; /* Larger button font size */
+        }
+        button:hover {
+            background-color: #CC0000; /* Darker red for hover effect */
+        }
+        .result, .recommendations {
+            margin-top: 20px;
+            padding: 40px; /* Increased padding for the result and recommendation boxes */
+            background-color: #e9ecef;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 1.3rem; /* Larger font size in the result/recommendation boxes */
+        }
+        .sidebar h3 {
+            color: #FF0000;
+            font-size: 1.5rem; /* Larger sidebar heading */
+        }
+        .sidebar p {
+            margin: 15px 0;
+            color: #333;
+            line-height: 1.6; /* Better line spacing */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Main frame for input and result -->
+        <div class="main-frame">
+            <h1>YouTube Recommendation System</h1>
+            <input type="number" id="user_id" placeholder="Enter User ID" required>
+            <input type="number" id="item_id" placeholder="Enter Item ID" required>
+            <button id="predictBtn">Predict Rating</button>
+            <div class="result" id="result" style="display:none;"></div>
+            <div class="recommendations" id="recommendations" style="display:none;"></div>
+        </div>
+
+        <!-- Sidebar for additional info -->
+        <div class="sidebar">
+            <h3>Information</h3>
+            <p><strong>User ID:</strong> This is a unique identifier for each user. (You can assume it as a User's Account in YouTube.)</p>
+            <p><strong>Item ID:</strong> This corresponds to the video or item you want a rating for. (It is a video that the user will interact with.)</p>
+            <p><strong>Predicted Rating:</strong> This is a score from 1 to 5 that suggests how much you will like the video.</p>
+            <p>Based on predicted ratings, the system can suggest videos that match your preferences.</p>
+            <p>If the predicted rating is high (e.g., 4.0 or above), it means the model believes the user will likely enjoy the item, and thus, it should be recommended to them.</p>
+            <p>If the predicted rating is low, it suggests the user probably won’t like the item, so it wouldn’t be recommended.</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predictBtn').onclick = async function() {
+    const userId = document.getElementById('user_id').value;
+    const itemId = document.getElementById('item_id').value;
+    const resultDiv = document.getElementById('result');
+    const recommendationsDiv = document.getElementById('recommendations');
+    resultDiv.style.display = 'none';
+    recommendationsDiv.style.display = 'none';
+
+    const response = await fetch('/predict/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ user_id: parseInt(userId), item_id: parseInt(itemId) })
+    });
+
+    if (response.ok) {
+        const data = await response.json();
+        const predictedRating = data.predicted_rating.toFixed(2);
+        resultDiv.textContent = `Predicted Rating: ${predictedRating}`;
+        resultDiv.style.display = 'block';
+
+        // Add logic for suggesting the current item
+        if (predictedRating > 3.5) {
+            resultDiv.innerHTML += '<br>The system suggests this item to the user.';
+        } else {
+            resultDiv.innerHTML += '<br>The system does not suggest this item to the user.';
+        }
+
+        if (data.recommended_items) {
+            recommendationsDiv.innerHTML = `<strong>Recommended Videos:</strong><br>${data.recommended_items.join(', ')}`;
+            recommendationsDiv.style.display = 'block';
+        }
+    } else {
+        resultDiv.textContent = 'Error predicting rating.';
+        resultDiv.style.display = 'block';
+    }
+};
+
+    </script>
+</body>
+</html>
